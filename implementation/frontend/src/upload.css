@@ -1,0 +1,186 @@
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background: #f5f5f7;
+  color: #1d1d1f;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+}
+
+/* ── Layout ── */
+.upload-container {
+  width: 100%;
+  max-width: 640px;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+/* ── Drop zone ── */
+.drop-zone {
+  border: 2px dashed #c7c7cc;
+  border-radius: 16px;
+  background: #fff;
+  padding: 3rem 2rem;
+  text-align: center;
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s;
+  outline: none;
+}
+.drop-zone:hover,
+.drop-zone:focus-visible {
+  border-color: #0071e3;
+  background: #f0f6ff;
+}
+.drop-zone--active {
+  border-color: #0071e3;
+  background: #e8f1fd;
+}
+
+.drop-icon {
+  display: inline-block;
+  font-size: 2rem;
+  color: #0071e3;
+  margin-bottom: 0.75rem;
+}
+.drop-label {
+  font-size: 1rem;
+  color: #3a3a3c;
+}
+.drop-link {
+  color: #0071e3;
+  font-weight: 500;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.drop-hint {
+  margin-top: 0.4rem;
+  font-size: 0.8rem;
+  color: #8e8e93;
+}
+
+/* ── File list ── */
+.file-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.file-item {
+  background: #fff;
+  border-radius: 12px;
+  padding: 0.85rem 1rem;
+  border: 1px solid #e5e5ea;
+  transition: border-color 0.2s;
+}
+.file-item--error,
+.file-item--failed  { border-color: #ff3b30; }
+.file-item--done    { border-color: #34c759; }
+.file-item--ready   { border-color: #0071e3; }
+
+.file-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.file-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  min-width: 0;
+}
+.file-name {
+  font-size: 0.9rem;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 320px;
+}
+.file-size {
+  font-size: 0.75rem;
+  color: #8e8e93;
+}
+
+.file-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+/* ── Badges ── */
+.badge {
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 0.25rem 0.6rem;
+  border-radius: 20px;
+  white-space: nowrap;
+}
+.badge--idle       { background: #f2f2f7; color: #8e8e93; }
+.badge--validating { background: #fff3cd; color: #856404; }
+.badge--ready      { background: #d1ecf1; color: #0c5460; }
+.badge--error      { background: #fde8e8; color: #c0392b; }
+.badge--uploading  { background: #e8f1fd; color: #0071e3; }
+.badge--done       { background: #d4edda; color: #155724; }
+
+/* ── Buttons ── */
+.btn {
+  border: none;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 0.35rem 0.75rem;
+  transition: opacity 0.15s;
+}
+.btn:hover { opacity: 0.8; }
+
+.btn--upload     { background: #0071e3; color: #fff; }
+.btn--remove     { background: #f2f2f7; color: #3a3a3c; }
+.btn--upload-all {
+  background: #0071e3;
+  color: #fff;
+  padding: 0.65rem 1.25rem;
+  border-radius: 10px;
+  font-size: 0.9rem;
+  align-self: flex-end;
+  border: none;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+.btn--upload-all:hover { opacity: 0.85; }
+
+/* ── Progress bar ── */
+.progress-bar {
+  margin-top: 0.6rem;
+  height: 4px;
+  background: #e5e5ea;
+  border-radius: 4px;
+  overflow: hidden;
+}
+.progress-fill {
+  height: 100%;
+  background: #0071e3;
+  border-radius: 4px;
+  transition: width 0.2s ease;
+}
+
+/* ── Error list ── */
+.error-list {
+  margin-top: 0.5rem;
+  padding-left: 1rem;
+  list-style: disc;
+}
+.error-list li {
+  font-size: 0.78rem;
+  color: #c0392b;
+  line-height: 1.5;
+}
