@@ -46,7 +46,7 @@ export default function FileUpload() {
     patch(entry.id, { status: 'uploading', progress: 0 });
 
     const form = new FormData();
-    form.append('file', entry.file);
+    form.append('files', entry.file);
 
     try {
       await axios.post(UPLOAD_URL, form, {
@@ -67,7 +67,38 @@ export default function FileUpload() {
     }
   };
 
-  const uploadAll = () => entries.filter((e) => e.status === 'ready').forEach(uploadEntry);
+  const uploadAll = async () => {
+    const ready = entries.filter((e) => e.status === 'ready');
+    if (!ready.length) return;
+
+    const controller = new AbortController();
+    ready.forEach((e) => {
+      cancelTokens.current[e.id] = controller;
+      patch(e.id, { status: 'uploading', progress: 0 });
+    });
+
+    const form = new FormData();
+    ready.forEach((e) => form.append('files', e.file));
+
+    try {
+      await axios.post(UPLOAD_URL, form, {
+        signal: controller.signal,
+        headers: { 'Content-Type': 'multipart/form-data' },
+        onUploadProgress: (ev) => {
+          const pct = ev.total ? Math.round((ev.loaded / ev.total) * 100) : 0;
+          ready.forEach((e) => patch(e.id, { progress: pct }));
+        },
+      });
+      ready.forEach((e) => patch(e.id, { status: 'done', progress: 100 }));
+    } catch (err) {
+      if (axios.isCancel(err)) return;
+      const msg = err.response?.data?.detail ?? err.message ?? 'Upload failed';
+      ready.forEach((e) => patch(e.id, { status: 'failed', errors: [msg] }));
+    } finally {
+      ready.forEach((e) => delete cancelTokens.current[e.id]);
+    }
+  };
+
   const readyCount = entries.filter((e) => e.status === 'ready').length;
 
   return (

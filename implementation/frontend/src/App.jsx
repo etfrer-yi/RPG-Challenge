@@ -1,4 +1,4 @@
-import './upload.css';
+import './styles/upload.css';
 import FileUpload from './components/FileUpload';
 
 export default function App() {
