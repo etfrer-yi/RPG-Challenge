@@ -86,7 +86,7 @@ def df_dump_row(
     """
     global _df
     _df = pd.concat([_df, pd.DataFrame([{
-        "origin": origin, "date": date, "description": description,
+        "origin": pathlib.Path(origin).name, "date": date, "description": description,
         "actor": actor, "amount": amount,
     }])], ignore_index=True)
     return f"Row appended (total rows: {len(_df)})"

@@ -66,7 +66,20 @@ One key limitation of this project is the fact that we cannot use paid APIs or A
 
 My aim is to produce the highest quality in terms of outputs, while being able to support multimodality and being able to invoke the model as many times as possible on their free tier without hitting limits.
 
-After browsing online
+After browsing online, I found that Gemma 3 27B had decent rate limits for their free tier
+```
+Gemma 3 12B Instruct	15,000 tokens/minute
+14,400 requests/day
+30 requests/minute
+Gemma 3 4B Instruct	15,000 tokens/minute
+14,400 requests/day
+30 requests/minute
+Gemma 3 1B Instruct	15,000 tokens/minute
+14,400 requests/day
+30 requests/minute
+```
+
+However, after using the `google-genai` Python library, which was easily adaptable to `fastmcp`, I realized the silly mistake that Gemma could not be used, so I used `gemini-2.5-flash` instead, with a much stronger request limit.
 
 ## Security
 
@@ -138,6 +151,10 @@ cd implementation/backend
 python3 -m venv venv
 source venv/bin/activate  # Windows: venv\Scripts\activate
 
+# Set KEY. Note that you can opt for the free tier on Google AI Studio at https://aistudio.google.com/api-keys,
+# which will limit you to just the free tier's calling, thereby obeying the constraints.
+export GEMINI_API_KEY=[your Google API key]
+
 # Install dependencies
 pip install -r requirements.txt
 
@@ -151,6 +168,144 @@ uvicorn main:app --reload
 
 **Requirements:** Python 3.10+, Docker Desktop (daemon must be running)
 
+## Sample output
+This is a sample printed output from the backend when I uploaded `Visa_Statement_Q12025.pdf`
+```
+[05/06/26 22:42:15] INFO     Processing request of type            server.py:727
+                             ListToolsRequest                                   
+[05/06/26 22:42:16] INFO     Processing request of type            server.py:727
+                             CallToolRequest                                    
+[05/06/26 22:42:32] INFO     Processing request of type            server.py:727
+                             CallToolRequest                                    
+                    INFO     Warning: FutureWarning: The behavior  server.py:717
+                             of DataFrame concatenation with empty              
+                             or all-NA entries is deprecated. In a              
+                             future version, this will no longer                
+                             exclude empty or all-NA columns when               
+                             determining the result dtypes. To                  
+                             retain the old behavior, exclude the               
+                             relevant entries before the concat                 
+                             operation.                                         
+                    INFO     Processing request of type            server.py:727
+                             CallToolRequest                                    
+                    INFO     Processing request of type            server.py:727
+                             CallToolRequest                                    
+                    INFO     Processing request of type            server.py:727
+                             CallToolRequest                                    
+                    INFO     Processing request of type            server.py:727
+                             CallToolRequest                                    
+                    INFO     Processing request of type            server.py:727
+                             CallToolRequest                                    
+                    INFO     Processing request of type            server.py:727
+                             CallToolRequest                                    
+                    INFO     Processing request of type            server.py:727
+                             CallToolRequest                                    
+                    INFO     Processing request of type            server.py:727
+                             CallToolRequest                                    
+                    INFO     Processing request of type            server.py:727
+                             CallToolRequest                                    
+                    INFO     Processing request of type            server.py:727
+                             CallToolRequest                                    
+                    INFO     Processing request of type            server.py:727
+                             CallToolRequest                                    
+                    INFO     Processing request of type            server.py:727
+                             CallToolRequest                                    
+                    INFO     Processing request of type            server.py:727
+                             CallToolRequest                                    
+                    INFO     Processing request of type            server.py:727
+                             CallToolRequest                                    
+                    INFO     Processing request of type            server.py:727
+                             CallToolRequest                                    
+                    INFO     Processing request of type            server.py:727
+                             CallToolRequest                                    
+                    INFO     Processing request of type            server.py:727
+                             CallToolRequest                                    
+                    INFO     Processing request of type            server.py:727
+                             CallToolRequest                                    
+                    INFO     Processing request of type            server.py:727
+                             CallToolRequest                                    
+                    INFO     Processing request of type            server.py:727
+                             CallToolRequest                                    
+                    INFO     Processing request of type            server.py:727
+                             CallToolRequest                                    
+                    INFO     Processing request of type            server.py:727
+                             CallToolRequest                                    
+                    INFO     Processing request of type            server.py:727
+                             CallToolRequest                                    
+                    INFO     Processing request of type            server.py:727
+                             CallToolRequest                                    
+                    INFO     Processing request of type            server.py:727
+                             CallToolRequest                                    
+                    INFO     Processing request of type            server.py:727
+                             CallToolRequest                                    
+                    INFO     Processing request of type            server.py:727
+                             CallToolRequest                                    
+                    INFO     Processing request of type            server.py:727
+                             CallToolRequest                                    
+                    INFO     Processing request of type            server.py:727
+                             CallToolRequest                                    
+                    INFO     Processing request of type            server.py:727
+                             CallToolRequest                                    
+                    INFO     Processing request of type            server.py:727
+                             CallToolRequest                                    
+                    INFO     Processing request of type            server.py:727
+                             CallToolRequest                                    
+                    INFO     Processing request of type            server.py:727
+                             CallToolRequest                                    
+                    INFO     Processing request of type            server.py:727
+                             CallToolRequest                                    
+                    INFO     Processing request of type            server.py:727
+                             CallToolRequest                                    
+[05/06/26 22:42:45] INFO     Processing request of type            server.py:727
+                             CallToolRequest                                    
+/app/processor/main_processor.py:128: FutureWarning: Passing literal json to 'read_json' is deprecated and will be removed in a future version. To read from a literal string, wrap it in a 'StringIO' object.
+  df = pd.read_json(raw)
+
+=== TRANSACTIONS ===
+                             origin       date                description             actor  amount
+/app/data/Visa_Statement_Q12025.pdf 2025-01-03          GOOGLE *WORKSPACE            GOOGLE   -8.28
+/app/data/Visa_Statement_Q12025.pdf 2025-01-06         ADOBE *CREATIVE CL             ADOBE  -74.99
+/app/data/Visa_Statement_Q12025.pdf 2025-01-06         ADOBE *CREATIVE CL             ADOBE  -74.99
+/app/data/Visa_Statement_Q12025.pdf 2025-01-06                  CANVA.COM         CANVA.COM  -16.99
+/app/data/Visa_Statement_Q12025.pdf 2025-01-10                NETFLIX.COM       NETFLIX.COM  -16.99
+/app/data/Visa_Statement_Q12025.pdf 2025-01-15                   SHOPIFY*          SHOPIFY*  -39.00
+/app/data/Visa_Statement_Q12025.pdf 2025-01-15         VRBO COWORKING MTL              VRBO  -30.00
+/app/data/Visa_Statement_Q12025.pdf 2025-01-18 WAYMO BUSINESS *X MONTREAL    WAYMO BUSINESS  -18.50
+/app/data/Visa_Statement_Q12025.pdf 2025-01-23                PETCO #4521             PETCO  -47.83
+/app/data/Visa_Statement_Q12025.pdf 2025-01-25              POSTES CANADA     POSTES CANADA  -14.50
+/app/data/Visa_Statement_Q12025.pdf 2025-01-28              STAPLES #0312           STAPLES  -45.99
+/app/data/Visa_Statement_Q12025.pdf 2025-01-31          AMAZON.CA *OFFICE         AMAZON.CA  -33.47
+/app/data/Visa_Statement_Q12025.pdf 2025-02-03          GOOGLE *WORKSPACE            GOOGLE   -8.28
+/app/data/Visa_Statement_Q12025.pdf 2025-02-06         ADOBE *CREATIVE CL             ADOBE  -74.99
+/app/data/Visa_Statement_Q12025.pdf 2025-02-06                  CANVA.COM         CANVA.COM  -16.99
+/app/data/Visa_Statement_Q12025.pdf 2025-02-10                NETFLIX.COM       NETFLIX.COM  -16.99
+/app/data/Visa_Statement_Q12025.pdf 2025-02-10         VRBO COWORKING MTL              VRBO  -25.00
+/app/data/Visa_Statement_Q12025.pdf 2025-02-14         ADOBE *CREATIVE CL             ADOBE   40.00
+/app/data/Visa_Statement_Q12025.pdf 2025-02-15                   SHOPIFY*          SHOPIFY*  -39.00
+/app/data/Visa_Statement_Q12025.pdf 2025-02-15                   SHOPIFY*          SHOPIFY*  -39.00
+/app/data/Visa_Statement_Q12025.pdf 2025-02-18          LE PETIT DEP REST LE PETIT DEP REST  -64.73
+/app/data/Visa_Statement_Q12025.pdf 2025-02-22          AMAZON.CA *OFFICE         AMAZON.CA  -22.15
+/app/data/Visa_Statement_Q12025.pdf 2025-02-24           SQ *CAFE MYRIADE  SQ *CAFE MYRIADE  -62.88
+/app/data/Visa_Statement_Q12025.pdf 2025-02-27              POSTES CANADA     POSTES CANADA  -18.75
+/app/data/Visa_Statement_Q12025.pdf 2025-03-03          GOOGLE *WORKSPACE            GOOGLE   -8.28
+/app/data/Visa_Statement_Q12025.pdf 2025-03-06         ADOBE *CREATIVE CL             ADOBE  -54.99
+/app/data/Visa_Statement_Q12025.pdf 2025-03-06                  CANVA.COM         CANVA.COM  -16.99
+/app/data/Visa_Statement_Q12025.pdf 2025-03-10                NETFLIX.COM       NETFLIX.COM  -16.99
+/app/data/Visa_Statement_Q12025.pdf 2025-03-10         VRBO COWORKING MTL              VRBO  -35.00
+/app/data/Visa_Statement_Q12025.pdf 2025-03-10         VRBO COWORKING MTL              VRBO  -35.00
+/app/data/Visa_Statement_Q12025.pdf 2025-03-12              STAPLES #0312           STAPLES  -32.49
+/app/data/Visa_Statement_Q12025.pdf 2025-03-14              STAPLES #0312           STAPLES   32.49
+/app/data/Visa_Statement_Q12025.pdf 2025-03-15                   SHOPIFY*          SHOPIFY*  -39.00
+/app/data/Visa_Statement_Q12025.pdf 2025-03-18              NAMECHEAP.COM     NAMECHEAP.COM  -22.99
+/app/data/Visa_Statement_Q12025.pdf 2025-03-22          AMAZON.CA *OFFICE         AMAZON.CA  -28.90
+/app/data/Visa_Statement_Q12025.pdf 2025-03-28              POSTES CANADA     POSTES CANADA  -12.25
+```
+
+## What went wrong
+
+* I knew about document upload, but ideally the customer should be able to upload entire folders instead of selecting each document.
+* After finding out that Gemma 3 27B and other Gemma 3 models have decent API limits, I had to use `gemini-2.5-flash` instead.
+
 ## Future roadmap
 
 - focus on PII redaction and security guardrails for LLMs
@@ -161,4 +316,9 @@ uvicorn main:app --reload
 - proper logging
 - further testing with more customer data - repeatable unit tests to ensure that results produced are consistent
 - further testing with more models - potentially exploring different models and how they fare
--
+
+
+## Limitations of the current approach
+- Big files might not be properly processed by the LLM, could bloat the context window beyond capacity
+- Need a way of verifying the integrity of the files processed beyond basic sanity checks
+- 

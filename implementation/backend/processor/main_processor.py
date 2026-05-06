@@ -2,7 +2,7 @@ import asyncio
 from pathlib import Path
 import pandas as pd
 from fastmcp import Client
-from processor.agents.base import MCP_SERVER_CMD, DF_COLUMNS
+from processor.agents.base import _mcp_transport, DF_COLUMNS
 from processor.agents.pdf_agent import PDFAgent
 from processor.agents.text_agent import TextAgent
 from processor.agents.image_agent import ImageAgent
@@ -117,13 +117,13 @@ async def main():
         else:
             files.append(f)
 
-    async with Client(MCP_SERVER_CMD) as mcp_client:
+    async with Client(_mcp_transport()) as mcp_client:
         for f in files:
             agent_cls = AGENT_MAP[f.suffix.lower()]
             await agent_cls(str(f), mcp_client).run()
 
         result = await mcp_client.call_tool("df_get_all", {})
-        raw = result.data if result.data is not None else result.content[0].text if result.content else "[]"
+        raw = result.content[0].text if result.content else "[]"
 
     df = pd.read_json(raw)
     if df.empty:

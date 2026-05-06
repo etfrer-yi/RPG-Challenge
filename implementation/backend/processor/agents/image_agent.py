@@ -2,7 +2,7 @@ from pathlib import Path
 from fastmcp import Client
 from google.genai import types
 from processor.config import AGENT_CONFIG
-from processor.agents.base import _gemini
+from processor.agents.base import _get_gemini
 
 _cfg = AGENT_CONFIG["image"]
 _MIME = {".jpg": "image/jpeg", ".jpeg": "image/jpeg", ".png": "image/png"}
@@ -21,7 +21,7 @@ class ImageAgent:
         mime = _MIME.get(path.suffix.lower(), "image/jpeg")
         image_part = types.Part.from_bytes(data=path.read_bytes(), mime_type=mime)
 
-        await _gemini.aio.models.generate_content(
+        await _get_gemini().aio.models.generate_content(
             model=self.model,
             contents=[
                 image_part,

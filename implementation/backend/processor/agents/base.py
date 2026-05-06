@@ -1,13 +1,20 @@
-import sys
+import sys, os
 from fastmcp import Client
+from fastmcp.client.transports import StdioTransport
 from google import genai
 from google.genai import types
 
-MCP_SERVER_CMD = [sys.executable, "-m", "processor.mcp.server"]
-
-_gemini = genai.Client()
+def _mcp_transport() -> StdioTransport:
+    return StdioTransport(
+        command=sys.executable,
+        args=["-m", "processor.mcp.server"],
+        env={"GEMINI_API_KEY": os.environ.get("GEMINI_API_KEY", "")},
+    )
 
 DF_COLUMNS = ["origin", "date", "description", "actor", "amount"]
+
+def _get_gemini() -> genai.Client:
+    return genai.Client(api_key=os.environ["GEMINI_API_KEY"])
 
 
 class BaseAgent:
@@ -22,7 +29,7 @@ class BaseAgent:
         return f"Process this file: {self.file_path}"
 
     async def run(self) -> None:
-        await _gemini.aio.models.generate_content(
+        await _get_gemini().aio.models.generate_content(
             model=self.model,
             contents=self.user_message(),
             config=types.GenerateContentConfig(
