@@ -139,6 +139,9 @@ It is only by looking at the `fastmcp` documentation that I narrowed down my pos
 
 Still, it seems like the agentic AI and LLM ecosystem is beyond imagination. I find it very hard to know what tooling worked with what, and what appropriate syntax to use. Do you use `results.data[0].text`? Or `results[0].data`? Does OpenRouter have support for the specific coding pattern I want? Does it work with `fastmcp`?
 
+## Demos
+See `recordings` folder. Note 2 different recordings were made - in the first recording, I forgot to scroll horizontally to illustrate the prices being displayed.
+
 ## Security
 
 My approach to security is two-fold
@@ -250,3 +253,4 @@ uvicorn main:app --reload
 - Potential duplicated data not handled. The refunds mentioned in `note.txt` which appears in the Visa statement as well might appear as duplicates. **Solution: consider**
 - Overall context is not properly understood. A file like `note.txt` can give some kind of context into the other files (in our case, Visa statements for example). **Solution: prior to each individual LLM parsing its own data, have an orchestrator agent of some sort read through all the files, gathering and synthesizing context, and then giving that context to the LLMs. This could be potentially very dangerous, as 1) the documents themselves might contain malicious and hidden instructions, and 2) the orchestrator agent could give malicious instructions or malicious context. Both should be taken into account - perhaps have an aside LLM read the documents and the instructions given by the orchestrator.**
 - Model availability: occasionally hitting upon 503 UNAVAILABLE. **Solution: some sort of model fallback mechanism, or retry mechanism.**
+- Inconsistency in model outputs. **Solution: better prompting, better MCP tools, potentially better models.**
