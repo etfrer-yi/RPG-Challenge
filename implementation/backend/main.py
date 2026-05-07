@@ -57,7 +57,7 @@ async def upload(files: List[UploadFile] = File(...)):
             image=PROCESSING_IMAGE,
             name=f"processor-{uuid.uuid4().hex[:8]}",
             volumes={tmp_dir: {"bind": CONTAINER_DATA_DIR, "mode": "rw"}},
-            environment={"GEMINI_API_KEY": os.environ.get("GEMINI_API_KEY", "")},
+            environment={"GOOGLE_API_KEY": os.environ.get("GOOGLE_API_KEY", "")},
             detach=True,
             remove=False,
         )

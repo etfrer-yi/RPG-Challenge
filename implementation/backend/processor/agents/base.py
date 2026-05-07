@@ -1,20 +1,13 @@
-import sys, os
+import os
 from fastmcp import Client
-from fastmcp.client.transports import StdioTransport
 from google import genai
 from google.genai import types
 
-def _mcp_transport() -> StdioTransport:
-    return StdioTransport(
-        command=sys.executable,
-        args=["-m", "processor.mcp.server"],
-        env={"GEMINI_API_KEY": os.environ.get("GEMINI_API_KEY", "")},
-    )
 
 DF_COLUMNS = ["origin", "date", "description", "actor", "amount"]
 
 def _get_gemini() -> genai.Client:
-    return genai.Client(api_key=os.environ["GEMINI_API_KEY"])
+    return genai.Client(api_key=os.environ["GOOGLE_API_KEY"])
 
 
 class BaseAgent:
