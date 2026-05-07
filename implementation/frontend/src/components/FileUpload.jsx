@@ -1,11 +1,13 @@
 import { useState, useRef, useCallback } from 'react';
 import axios from 'axios';
 import { validateFile } from '../utils/validateFile';
+import TransactionsTable from './TransactionsTable';
 
 const UPLOAD_URL = 'http://localhost:8000/upload';
 const ACCEPT = '.pdf,.csv,.xlsx,.jpg,.jpeg,.png,.txt,.docx';
 
-// status: idle | validating | ready | error | uploading | done | failed
+
+// status: idle | validating | ready | error | uploading | processing | done | failed
 function createEntry(file) {
   return { id: crypto.randomUUID(), file, status: 'idle', errors: [], progress: 0 };
 }
@@ -13,6 +15,7 @@ function createEntry(file) {
 export default function FileUpload() {
   const [entries, setEntries] = useState([]);
   const [dragging, setDragging] = useState(false);
+  const [transactions, setTransactions] = useState(null);
   const inputRef = useRef(null);
   const cancelTokens = useRef({});
 
@@ -49,7 +52,8 @@ export default function FileUpload() {
     form.append('files', entry.file);
 
     try {
-      await axios.post(UPLOAD_URL, form, {
+      patch(entry.id, { status: 'processing', progress: 100 });
+      const res = await axios.post(UPLOAD_URL, form, {
         signal: controller.signal,
         headers: { 'Content-Type': 'multipart/form-data' },
         onUploadProgress: (e) => {
@@ -58,6 +62,9 @@ export default function FileUpload() {
         },
       });
       patch(entry.id, { status: 'done', progress: 100 });
+      if (res.data.transactions) {
+        setTransactions((prev) => prev ? [...prev, ...res.data.transactions] : res.data.transactions);
+      }
     } catch (err) {
       if (axios.isCancel(err)) return;
       const msg = err.response?.data?.detail ?? err.message ?? 'Upload failed';
@@ -81,7 +88,8 @@ export default function FileUpload() {
     ready.forEach((e) => form.append('files', e.file));
 
     try {
-      await axios.post(UPLOAD_URL, form, {
+      ready.forEach((e) => patch(e.id, { status: 'processing', progress: 100 }));
+      const res = await axios.post(UPLOAD_URL, form, {
         signal: controller.signal,
         headers: { 'Content-Type': 'multipart/form-data' },
         onUploadProgress: (ev) => {
@@ -90,6 +98,9 @@ export default function FileUpload() {
         },
       });
       ready.forEach((e) => patch(e.id, { status: 'done', progress: 100 }));
+      if (res.data.transactions) {
+        setTransactions((prev) => prev ? [...prev, ...res.data.transactions] : res.data.transactions);
+      }
     } catch (err) {
       if (axios.isCancel(err)) return;
       const msg = err.response?.data?.detail ?? err.message ?? 'Upload failed';
@@ -161,6 +172,11 @@ export default function FileUpload() {
           Upload all ({readyCount} files)
         </button>
       )}
+
+      {transactions && transactions.length > 0 && (
+        <TransactionsTable transactions={transactions} />
+
+)}
     </div>
   );
 }
@@ -172,7 +188,8 @@ function StatusBadge({ entry }) {
     ready:      ['badge--ready',      '✓ Ready'],
     error:      ['badge--error',      '✗ Invalid'],
     uploading:  ['badge--uploading',  `${entry.progress}%`],
-    done:       ['badge--done',       '✓ Uploaded'],
+    processing: ['badge--uploading',  'Processing…'],
+    done:       ['badge--done',       '✓ Done'],
     failed:     ['badge--error',      '✗ Failed'],
   };
   const [cls, label] = map[entry.status] ?? ['', entry.status];

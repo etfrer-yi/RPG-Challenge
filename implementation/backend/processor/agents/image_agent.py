@@ -25,7 +25,7 @@ class ImageAgent:
             model=self.model,
             contents=[
                 image_part,
-                f"This is {path.name}. Identify all financial transactions and store each with df_dump_row.",
+                f"This is {path.name}. Identify all financial transactions and store them using df_dump_rows (batch).",
             ],
             config=types.GenerateContentConfig(
                 system_instruction=self.system_prompt,

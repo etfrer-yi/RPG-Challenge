@@ -108,6 +108,8 @@ async def main():
     all_files = [f for f in DATA_DIR.iterdir() if f.is_file()]
     if not all_files:
         print("No files found in /app/data", flush=True)
+    else:
+        print(f"Found {len(all_files)} files: {[f.name for f in all_files]}", flush=True)
 
     files: list[Path] = []
     for f in all_files:
@@ -115,6 +117,7 @@ async def main():
         if err:
             print(f"Skipping {f.name}: {err}", flush=True)
         else:
+            print(f"Validated: {f.name}", flush=True)
             files.append(f)
 
     async with Client(_mcp_transport()) as mcp_client:

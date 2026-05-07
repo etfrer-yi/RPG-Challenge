@@ -1,5 +1,5 @@
 from mcp.server.fastmcp import FastMCP
-import base64, pathlib, subprocess, json
+import base64, pathlib, subprocess, json, sys
 from typing import Optional
 import pandas as pd
 
@@ -50,15 +50,28 @@ def docx_extract_text(path: str) -> str:
 
 @mcp.tool()
 def csv_preview(path: str, n_rows: int = 10) -> str:
-    # TODO: Potentially read more, since as we've seen, the CSV file data are actually inconsistent
     """Return headers + sample rows of a CSV or Excel file as markdown."""
     df = pd.read_excel(path, nrows=n_rows) if path.endswith(".xlsx") else pd.read_csv(path, nrows=n_rows)
     return df.to_markdown()
 
 
 @mcp.tool()
+def csv_read_columns(path: str, columns: list[str]) -> str:
+    """Read all values from the specified columns of a CSV or Excel file.
+
+    Returns a JSON array of objects containing only the requested columns.
+    Column names must match the headers exactly (case-sensitive).
+    Rows where all requested columns are null/NaN are omitted.
+    """
+    df = pd.read_excel(path) if path.endswith(".xlsx") else pd.read_csv(path)
+    missing = [c for c in columns if c not in df.columns]
+    if missing:
+        return f"ERROR: columns not found: {missing}. Available columns: {list(df.columns)}"
+    return df[columns].to_json(orient="records", date_format="iso")
+
+
+@mcp.tool()
 def execute_python(code: str, timeout: int = 30) -> str:
-    # TODO: Further security?
     """Execute Python code in a subprocess sandbox, return stdout or stderr."""
     result = subprocess.run(
         ["python", "-c", code],
@@ -76,7 +89,7 @@ def df_dump_row(
     description: Optional[str] = None,
     actor: Optional[str] = None,
 ) -> str:
-    """Append a financial transaction row to the shared DataFrame.
+    """Append a single financial transaction row to the shared DataFrame.
 
     - origin: source file path
     - date: ISO 8601 or plain date string
@@ -85,11 +98,38 @@ def df_dump_row(
     - amount: positive if money enters the customer's account, negative if it leaves
     """
     global _df
+    print(f"[TOOL] df_dump_row called: origin={origin}, amount={amount}", file=sys.stderr, flush=True)
     _df = pd.concat([_df, pd.DataFrame([{
         "origin": pathlib.Path(origin).name, "date": date, "description": description,
         "actor": actor, "amount": amount,
     }])], ignore_index=True)
     return f"Row appended (total rows: {len(_df)})"
+
+
+@mcp.tool()
+def df_dump_rows(rows: list[dict]) -> str:
+    """Append multiple financial transaction rows to the shared DataFrame.
+
+    Each row must have: origin, date, amount, description (optional), actor (optional).
+    - origin: source file path
+    - date: ISO 8601 or plain date string
+    - description: nature of the transaction (nullable)
+    - actor: counterparty entity (nullable)
+    - amount: positive if money enters the customer's account, negative if it leaves
+    """
+    global _df
+    print(f"[TOOL] df_dump_rows called with {len(rows)} rows", file=sys.stderr, flush=True)
+    processed = []
+    for r in rows:
+        processed.append({
+            "origin": pathlib.Path(r.get("origin", "")).name,
+            "date": r.get("date"),
+            "description": r.get("description"),
+            "actor": r.get("actor"),
+            "amount": r.get("amount"),
+        })
+    _df = pd.concat([_df, pd.DataFrame(processed)], ignore_index=True)
+    return f"Rows appended: {len(rows)} (total rows: {len(_df)})"
 
 
 @mcp.tool()

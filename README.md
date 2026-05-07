@@ -69,7 +69,7 @@ Regarding point 2, I wanted a server that supports multimodality. My aim was an 
 - for text documents, simply read and forward them to the agent
 - for PDFs, can consider using a vision model for scanned documents or a normal text model to which you feed lines of text on a PDF
 - for images, use a vision model
-- for CSVs, I need a model to read the general structure of the Excel/CSV file uploaded, and then generate some Python code for processing the pandas dataframe associated with it after determining its structure. This is typically the approach taken by AI-driven business intelligence tools where you dump CSV data and get charts in return.
+- ~~for CSVs, I need a model to read the general structure of the Excel/CSV file uploaded, and then generate some Python code for processing the pandas dataframe associated with it after determining its structure. This is typically the approach taken by AI-driven business intelligence tools where you dump CSV data and get charts in return.~~ **Update: The code generation approach did not work reliably. The model sometimes refused to generate code, or generated code that didn't properly parse the data. We switched to having the model directly inspect the CSV preview and call df_dump_rows with the extracted transactions.**
 
 Coding the backend FastAPI server would be easy with AI. I chose FastAPI for its growing popularity among startups. Using Docker was fairly simple as well. I also assumed that the process of coding the individual agents was fairly simple. I already had a modular approach, which I could dictate to the LLMs, where different sub-agent classes inherit from a base agent class, each agent class taking as inputs its prompt, some tools it can invoke, etc. I had in mind the usage of `fastmcp`, which I was somewhat acquainted with and is a rather easy framework to use.
 
@@ -152,7 +152,7 @@ To mitigate security risks, we perform some basic checking on the frontend to al
 
 In the backend, we intercept the files added in the frontend, spins up a Docker container from a minimal image, and perform all calls to AI models inside of the Docker container. This decision might not appeal to everyone, but I prefer this approach in order to limit the blast radius of "rogue" LLM and malicious instructions in the documents, and because we're reading only a very small set of files uploaded by the customer, I would rather not have the AI touch my file system at all.
 
-The Dockerized approach is especially useful for LLMs to handle CSV data - given the unstructured nature of the data, I wanted an LLM to inspect it a bit before generating *and* executing the code. A sandbox for code execution is really helpful in this case - ideally, the code generated would also be inspected for safety, ensuring it is read-only.
+~~The Dockerized approach is especially useful for LLMs to handle CSV data - given the unstructured nature of the data, I wanted an LLM to inspect it a bit before generating *and* executing the code. A sandbox for code execution is really helpful in this case - ideally, the code generated would also be inspected for safety, ensuring it is read-only.~~ **Update: The code generation/sandbox approach was abandoned because the model did not reliably generate working code. We now have the model directly inspect the CSV preview and extract transactions via tool calls, eliminating the need for code execution.**
 
 This Dockerized approach would also be quite convenient in the cloud - I'd imagine a potential serverless offering of the service using something like ECS (Elastic Container Service), which spins up on-the-spot Docker instances on EC2 virtual machines.
 
@@ -228,138 +228,8 @@ uvicorn main:app --reload
 
 **Requirements:** Python 3.10+, Docker Desktop (daemon must be running)
 
-## Sample output
-This is a sample printed output from the backend when I uploaded `Visa_Statement_Q12025.pdf`
-```
-[05/06/26 22:42:15] INFO     Processing request of type            server.py:727
-                             ListToolsRequest                                   
-[05/06/26 22:42:16] INFO     Processing request of type            server.py:727
-                             CallToolRequest                                    
-[05/06/26 22:42:32] INFO     Processing request of type            server.py:727
-                             CallToolRequest                                    
-                    INFO     Warning: FutureWarning: The behavior  server.py:717
-                             of DataFrame concatenation with empty              
-                             or all-NA entries is deprecated. In a              
-                             future version, this will no longer                
-                             exclude empty or all-NA columns when               
-                             determining the result dtypes. To                  
-                             retain the old behavior, exclude the               
-                             relevant entries before the concat                 
-                             operation.                                         
-                    INFO     Processing request of type            server.py:727
-                             CallToolRequest                                    
-                    INFO     Processing request of type            server.py:727
-                             CallToolRequest                                    
-                    INFO     Processing request of type            server.py:727
-                             CallToolRequest                                    
-                    INFO     Processing request of type            server.py:727
-                             CallToolRequest                                    
-                    INFO     Processing request of type            server.py:727
-                             CallToolRequest                                    
-                    INFO     Processing request of type            server.py:727
-                             CallToolRequest                                    
-                    INFO     Processing request of type            server.py:727
-                             CallToolRequest                                    
-                    INFO     Processing request of type            server.py:727
-                             CallToolRequest                                    
-                    INFO     Processing request of type            server.py:727
-                             CallToolRequest                                    
-                    INFO     Processing request of type            server.py:727
-                             CallToolRequest                                    
-                    INFO     Processing request of type            server.py:727
-                             CallToolRequest                                    
-                    INFO     Processing request of type            server.py:727
-                             CallToolRequest                                    
-                    INFO     Processing request of type            server.py:727
-                             CallToolRequest                                    
-                    INFO     Processing request of type            server.py:727
-                             CallToolRequest                                    
-                    INFO     Processing request of type            server.py:727
-                             CallToolRequest                                    
-                    INFO     Processing request of type            server.py:727
-                             CallToolRequest                                    
-                    INFO     Processing request of type            server.py:727
-                             CallToolRequest                                    
-                    INFO     Processing request of type            server.py:727
-                             CallToolRequest                                    
-                    INFO     Processing request of type            server.py:727
-                             CallToolRequest                                    
-                    INFO     Processing request of type            server.py:727
-                             CallToolRequest                                    
-                    INFO     Processing request of type            server.py:727
-                             CallToolRequest                                    
-                    INFO     Processing request of type            server.py:727
-                             CallToolRequest                                    
-                    INFO     Processing request of type            server.py:727
-                             CallToolRequest                                    
-                    INFO     Processing request of type            server.py:727
-                             CallToolRequest                                    
-                    INFO     Processing request of type            server.py:727
-                             CallToolRequest                                    
-                    INFO     Processing request of type            server.py:727
-                             CallToolRequest                                    
-                    INFO     Processing request of type            server.py:727
-                             CallToolRequest                                    
-                    INFO     Processing request of type            server.py:727
-                             CallToolRequest                                    
-                    INFO     Processing request of type            server.py:727
-                             CallToolRequest                                    
-                    INFO     Processing request of type            server.py:727
-                             CallToolRequest                                    
-                    INFO     Processing request of type            server.py:727
-                             CallToolRequest                                    
-                    INFO     Processing request of type            server.py:727
-                             CallToolRequest                                    
-                    INFO     Processing request of type            server.py:727
-                             CallToolRequest                                    
-                    INFO     Processing request of type            server.py:727
-                             CallToolRequest                                    
-                    INFO     Processing request of type            server.py:727
-                             CallToolRequest                                    
-[05/06/26 22:42:45] INFO     Processing request of type            server.py:727
-                             CallToolRequest                                    
-/app/processor/main_processor.py:128: FutureWarning: Passing literal json to 'read_json' is deprecated and will be removed in a future version. To read from a literal string, wrap it in a 'StringIO' object.
-  df = pd.read_json(raw)
+## Images
 
-=== TRANSACTIONS ===
-                             origin       date                description             actor  amount
-/app/data/Visa_Statement_Q12025.pdf 2025-01-03          GOOGLE *WORKSPACE            GOOGLE   -8.28
-/app/data/Visa_Statement_Q12025.pdf 2025-01-06         ADOBE *CREATIVE CL             ADOBE  -74.99
-/app/data/Visa_Statement_Q12025.pdf 2025-01-06         ADOBE *CREATIVE CL             ADOBE  -74.99
-/app/data/Visa_Statement_Q12025.pdf 2025-01-06                  CANVA.COM         CANVA.COM  -16.99
-/app/data/Visa_Statement_Q12025.pdf 2025-01-10                NETFLIX.COM       NETFLIX.COM  -16.99
-/app/data/Visa_Statement_Q12025.pdf 2025-01-15                   SHOPIFY*          SHOPIFY*  -39.00
-/app/data/Visa_Statement_Q12025.pdf 2025-01-15         VRBO COWORKING MTL              VRBO  -30.00
-/app/data/Visa_Statement_Q12025.pdf 2025-01-18 WAYMO BUSINESS *X MONTREAL    WAYMO BUSINESS  -18.50
-/app/data/Visa_Statement_Q12025.pdf 2025-01-23                PETCO #4521             PETCO  -47.83
-/app/data/Visa_Statement_Q12025.pdf 2025-01-25              POSTES CANADA     POSTES CANADA  -14.50
-/app/data/Visa_Statement_Q12025.pdf 2025-01-28              STAPLES #0312           STAPLES  -45.99
-/app/data/Visa_Statement_Q12025.pdf 2025-01-31          AMAZON.CA *OFFICE         AMAZON.CA  -33.47
-/app/data/Visa_Statement_Q12025.pdf 2025-02-03          GOOGLE *WORKSPACE            GOOGLE   -8.28
-/app/data/Visa_Statement_Q12025.pdf 2025-02-06         ADOBE *CREATIVE CL             ADOBE  -74.99
-/app/data/Visa_Statement_Q12025.pdf 2025-02-06                  CANVA.COM         CANVA.COM  -16.99
-/app/data/Visa_Statement_Q12025.pdf 2025-02-10                NETFLIX.COM       NETFLIX.COM  -16.99
-/app/data/Visa_Statement_Q12025.pdf 2025-02-10         VRBO COWORKING MTL              VRBO  -25.00
-/app/data/Visa_Statement_Q12025.pdf 2025-02-14         ADOBE *CREATIVE CL             ADOBE   40.00
-/app/data/Visa_Statement_Q12025.pdf 2025-02-15                   SHOPIFY*          SHOPIFY*  -39.00
-/app/data/Visa_Statement_Q12025.pdf 2025-02-15                   SHOPIFY*          SHOPIFY*  -39.00
-/app/data/Visa_Statement_Q12025.pdf 2025-02-18          LE PETIT DEP REST LE PETIT DEP REST  -64.73
-/app/data/Visa_Statement_Q12025.pdf 2025-02-22          AMAZON.CA *OFFICE         AMAZON.CA  -22.15
-/app/data/Visa_Statement_Q12025.pdf 2025-02-24           SQ *CAFE MYRIADE  SQ *CAFE MYRIADE  -62.88
-/app/data/Visa_Statement_Q12025.pdf 2025-02-27              POSTES CANADA     POSTES CANADA  -18.75
-/app/data/Visa_Statement_Q12025.pdf 2025-03-03          GOOGLE *WORKSPACE            GOOGLE   -8.28
-/app/data/Visa_Statement_Q12025.pdf 2025-03-06         ADOBE *CREATIVE CL             ADOBE  -54.99
-/app/data/Visa_Statement_Q12025.pdf 2025-03-06                  CANVA.COM         CANVA.COM  -16.99
-/app/data/Visa_Statement_Q12025.pdf 2025-03-10                NETFLIX.COM       NETFLIX.COM  -16.99
-/app/data/Visa_Statement_Q12025.pdf 2025-03-10         VRBO COWORKING MTL              VRBO  -35.00
-/app/data/Visa_Statement_Q12025.pdf 2025-03-10         VRBO COWORKING MTL              VRBO  -35.00
-/app/data/Visa_Statement_Q12025.pdf 2025-03-12              STAPLES #0312           STAPLES  -32.49
-/app/data/Visa_Statement_Q12025.pdf 2025-03-14              STAPLES #0312           STAPLES   32.49
-/app/data/Visa_Statement_Q12025.pdf 2025-03-15                   SHOPIFY*          SHOPIFY*  -39.00
-/app/data/Visa_Statement_Q12025.pdf 2025-03-18              NAMECHEAP.COM     NAMECHEAP.COM  -22.99
-/app/data/Visa_Statement_Q12025.pdf 2025-03-22          AMAZON.CA *OFFICE         AMAZON.CA  -28.90
-/app/data/Visa_Statement_Q12025.pdf 2025-03-28              POSTES CANADA     POSTES CANADA  -12.25
-```
 
 ## Future roadmap
 - focus on PII redaction and security guardrails for LLMs
@@ -370,9 +240,7 @@ This is a sample printed output from the backend when I uploaded `Visa_Statement
 - proper logging
 - further testing with more customer data - repeatable unit tests to ensure that results produced are consistent
 - further testing with more models - potentially exploring different models and how they fare
-
-## Other avenues to explore
-- Python libraries for specialized OCR - PaddleOCR, PIL.
+- further testing different ways of ingesting the data. I'm thinking especially PaddleOCR for working with PDFs.
 
 
 ## Limitations of the current approach
@@ -381,3 +249,4 @@ This is a sample printed output from the backend when I uploaded `Visa_Statement
 - The current way of parsing PDFs is using a PDF parsing library in Python which reads the characters. However, if the PDFs are actually raw scans instead of something like the Visa statement with recognizable characters, it might not work **Solution: based on the result of trying to parse the characters of the PDF, make a decision as to whether to submit the PDF as an image or a stream of proper valid characters read from it.**
 - Potential duplicated data not handled. The refunds mentioned in `note.txt` which appears in the Visa statement as well might appear as duplicates. **Solution: consider**
 - Overall context is not properly understood. A file like `note.txt` can give some kind of context into the other files (in our case, Visa statements for example). **Solution: prior to each individual LLM parsing its own data, have an orchestrator agent of some sort read through all the files, gathering and synthesizing context, and then giving that context to the LLMs. This could be potentially very dangerous, as 1) the documents themselves might contain malicious and hidden instructions, and 2) the orchestrator agent could give malicious instructions or malicious context. Both should be taken into account - perhaps have an aside LLM read the documents and the instructions given by the orchestrator.**
+- Model availability: occasionally hitting upon 503 UNAVAILABLE. **Solution: some sort of model fallback mechanism, or retry mechanism.**

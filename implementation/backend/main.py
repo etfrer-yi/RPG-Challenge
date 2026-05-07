@@ -2,12 +2,14 @@ import os
 import shutil
 import tempfile
 import uuid
+import json
 
 import docker
 from fastapi import FastAPI, HTTPException, UploadFile, File
 from typing import List
 from fastapi.middleware.cors import CORSMiddleware
 import logging
+import pandas as pd
 
 logger = logging.getLogger(__name__)
 app = FastAPI()
@@ -53,6 +55,8 @@ async def upload(files: List[UploadFile] = File(...)):
 
         client = docker.from_env()
 
+        # NOTE: Implementation slightly awkward. Could theoretically Dockerize the entire FastAPI server,
+        # not just the agentic AI workflow. But for now we'll let it slide.
         container = client.containers.run(
             image=PROCESSING_IMAGE,
             name=f"processor-{uuid.uuid4().hex[:8]}",
@@ -62,10 +66,30 @@ async def upload(files: List[UploadFile] = File(...)):
             remove=False,
         )
 
+        # Wait for container to complete
+        result = container.wait()
+        exit_code = result.get("StatusCode", -1)
+
+        if exit_code != 0:
+            logs = container.logs().decode("utf-8", errors="replace")
+            container.remove()
+            raise HTTPException(status_code=500, detail=f"Processing failed:\n{logs}")
+
+        # Read the output CSV
+        csv_path = os.path.join(tmp_dir, "transactions.csv")
+        if not os.path.exists(csv_path):
+            container.remove()
+            raise HTTPException(status_code=500, detail="No transactions.csv produced")
+
+        df = pd.read_csv(csv_path)
+        transactions = json.loads(df.to_json(orient="records"))
+
+        # container.remove()
+
         return {
             "files": [f.filename for f in files],
-            "container_id": container.short_id,
-            "status": "container_started",
+            "status": "completed",
+            "transactions": transactions,
         }
 
     except HTTPException:

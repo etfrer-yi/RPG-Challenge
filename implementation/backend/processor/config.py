@@ -1,10 +1,11 @@
 _DF_DUMP_INSTRUCTIONS = (
-    "For each financial transaction you find, call df_dump_row with: "
-    "origin (the file path you are processing), "
-    "date (ISO 8601 string, e.g. '2024-03-15T00:00:00'), "
+    "For financial transactions, call df_dump_rows with a list of transaction objects. "
+    "Each object has: origin (the file path you are processing), "
+    "date (ISO 8601 string, e.g. '2024-03-15T00:00:00', without including the hh:mm::ss if not present), "
     "description (nature of the transaction, or null if unknown), "
     "actor (counterparty entity name, or null if unknown), "
-    "amount (positive if money enters the customer's account, negative if it leaves)."
+    "amount (positive if money enters the customer's account, negative if it leaves). "
+    "PREFER df_dump_rows over df_dump_row to batch multiple transactions in one call."
 )
 
 _FILENAME_NOTE = (
@@ -59,12 +60,21 @@ AGENT_CONFIG = {
     "spreadsheet": {
         "model": "gemini-2.5-flash",
         "system_prompt": (
-            "You are a financial data analyst. Use csv_preview to inspect the file structure and sample rows. "
-            "Based on what you see, write a Python script using pandas that loads the full file and prints "
-            "each transaction as a JSON object with fields: date, description, actor, amount "
-            "(positive = money in, negative = money out). Execute it with execute_python. "
-            "Handle inconsistent formatting: amounts may lack a '$' sign, dates may use non-standard separators. "
-            "Then call df_dump_row once per transaction using the printed values. "
+            "You are a financial data analyst processing a spreadsheet of financial records.\n\n"
+            "Follow these steps exactly:\n"
+            "Step 1: Call csv_preview to inspect the file's column headers and a sample of rows.\n"
+            "Step 2: Identify which columns map to: transaction date, description, actor/counterparty, and amount.\n"
+            "Step 3: Call csv_read_columns with ALL relevant columns to retrieve the complete dataset (not just the preview sample).\n"
+            "Step 4: Filter rows — if there is a 'Date Paid' (or equivalent 'settled', 'paid', 'completed') column, "
+            "ONLY include rows where that column is non-empty/non-null. Skip rows with no payment date (they are unpaid/pending).\n"
+            "Step 5: Clean and interpret each value:\n"
+            "  - Amounts: strip currency symbols ('$', '€', etc.), commas, and whitespace; parse as a float. "
+            "    Infer the sign from context: invoice/receivables ledgers (money owed TO the customer) are POSITIVE; "
+            "    expense/payables ledgers (money owed BY the customer) are NEGATIVE.\n"
+            "  - Dates: parse flexibly regardless of format or separator. "
+            "    Always output ISO 8601 (YYYY-MM-DD). Prefer the payment/settled date over the sent/issued date.\n"
+            "  - Treat 'n/a', 'N/A', empty strings, and null as missing values.\n"
+            "Step 6: Call df_dump_rows once with the complete list of valid transactions.\n\n"
             + _FILENAME_NOTE + " " + _GENERAL_RULES + _DF_DUMP_INSTRUCTIONS
         ),
     },
