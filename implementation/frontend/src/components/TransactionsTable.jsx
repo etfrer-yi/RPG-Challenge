@@ -31,9 +31,13 @@ export default function TransactionsTable({ transactions }) {
           <tbody>
             {transactions.map((tx, i) => (
               <tr key={i}>
-                {Object.entries(tx).map(([key, val], j) => (
-                  <td key={j}>{formatValue(key, val)}</td>
-                ))}
+                {Object.entries(tx).map(([key, val], j) => {
+                  const formatted = formatValue(key, val);
+                  const cls = key === 'amount' && !isNaN(parseFloat(val))
+                    ? parseFloat(val) > 0 ? 'positive' : 'negative'
+                    : undefined;
+                  return <td key={j} className={cls}>{formatted}</td>;
+                })}
               </tr>
             ))}
           </tbody>

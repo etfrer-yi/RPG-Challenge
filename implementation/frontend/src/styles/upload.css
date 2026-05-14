@@ -210,6 +210,8 @@ body {
 }
 .transactions-header .positive { color: #34c759; }
 .transactions-header .negative { color: #ff3b30; }
+.positive { color: #34c759; }
+.negative { color: #ff3b30; }
 .transactions-table-wrapper {
   border-radius: 14px;
   overflow: hidden;
