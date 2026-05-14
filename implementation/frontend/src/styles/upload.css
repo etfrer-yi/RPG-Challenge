@@ -211,13 +211,15 @@ body {
 .transactions-header .positive { color: #34c759; }
 .transactions-header .negative { color: #ff3b30; }
 .transactions-table-wrapper {
-  overflow-x: auto;
-  border-radius: 12px;
+  border-radius: 14px;
+  overflow: hidden;
   border: 1px solid #e5e5ea;
+  width: 80%;
+  margin-left: auto;
+  margin-right: auto;
 }
 .transactions-table {
   width: 100%;
-  min-width: max-content;
   border-collapse: collapse;
   background: #fff;
   font-size: 0.85rem;

@@ -5,7 +5,7 @@ export default function TransactionsTable({ transactions }) {
     if (val === null || val === undefined) return '—';
     if (key === 'amount') {
       const num = parseFloat(val);
-      if (!isNaN(num) && num > 0) return `+${val}`;
+      if (!isNaN(num)) return num > 0 ? `+${num.toFixed(2)}` : num.toFixed(2);
     }
     return val;
   };

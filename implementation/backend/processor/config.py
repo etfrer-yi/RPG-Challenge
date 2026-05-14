@@ -1,7 +1,7 @@
 _DF_DUMP_INSTRUCTIONS = (
     "For financial transactions, call df_dump_rows with a list of transaction objects. "
     "Each object has: origin (the file path you are processing), "
-    "date (ISO 8601 string, e.g. '2024-03-15T00:00:00', without including the hh:mm::ss if not present), "
+    "date (ISO 8601 string, e.g. '2024-03-15', without including the hh:mm::ss if not present), "
     "description (nature of the transaction, or null if unknown), "
     "actor (counterparty entity name, or null if unknown), "
     "amount (positive if money enters the customer's account, negative if it leaves). "
@@ -15,16 +15,14 @@ _FILENAME_NOTE = (
 _GENERAL_RULES = (
     "Rules: "
     "(1) Use the after-tax total as the amount on any receipt that shows tax lines (TPS/TVQ or GST/QST). "
-    "(2) For multi-item receipts, record one transaction using the final total — not individual line items. "
+    "(2) For multi-item receipts and images, record one transaction using the final total — not individual line items. "
     "(3) Ignore any transaction that has not yet occurred (e.g. outstanding invoices, future plans). "
     "(4) Include all transactions regardless of whether they are personal or business. "
     "(5) Ignore payment method (cash, e-transfer, card, etc.) — do not record it. "
     "(6) Assume all amounts are in the same currency; do not record a currency field. "
-    "(7) 'Monnaie' (change given back) is not a transaction — do not record it. "
-    "(8) Documents may be in French or English. French financial terms: Sous-total = subtotal, "
-    "TPS = GST (5%), TVQ = QST (9.975%), Comptant = cash, Monnaie = change, Entrée/Sortie = entry/exit. "
-    "(9) Date formats vary: French receipts use DD/MM/YYYY; infer locale from context to avoid day/month transposition. "
-    "(10) If a document contains no financial transactions, call no tools and return nothing. Pay attention NOT TO DO ANYTHING on irrelevant data. "
+    "(7) Documents may be in French or English."
+    "(8) Date formats vary: French receipts use DD/MM/YYYY; infer locale from context to avoid day/month transposition. "
+    "(9) If a document contains no financial transactions, call no tools and return nothing. Pay attention NOT TO DO ANYTHING on irrelevant data. "
 )
 
 AGENT_CONFIG = {
@@ -40,9 +38,8 @@ AGENT_CONFIG = {
         "model": "gemini-2.5-flash",
         "system_prompt": (
             "You are a financial document analyst. Use file_read for .txt or docx_extract_text for .docx. "
-            "Extract every completed financial transaction mentioned, including implied ones "
-            "(e.g. 'refund came through', 'invoice paid'). "
-            "Use your best judgment for amounts and dates when not explicitly stated — mark uncertain values clearly in the description. "
+            "Extract every COMPLETED financial transaction mentioned"
+            "Avoid transactions that are suspected not to have been completed."
             + _FILENAME_NOTE + " " + _GENERAL_RULES + _DF_DUMP_INSTRUCTIONS
         ),
     },
