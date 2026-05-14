@@ -9,9 +9,6 @@ class SpreadsheetAgent(BaseAgent):
     system_prompt = _cfg["system_prompt"]
 
     def user_message(self) -> str:
-        return f"Extract all completed financial transactions from this spreadsheet: {self.file_path}"
-
-    def user_message(self) -> str:
         return (
             f"Extract all completed (paid) financial transactions from this spreadsheet: {self.file_path}\n"
             "Follow the steps in your instructions exactly: preview, read all columns, filter unpaid rows, clean values, then dump."

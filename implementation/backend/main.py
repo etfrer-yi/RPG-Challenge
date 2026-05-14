@@ -84,7 +84,7 @@ async def upload(files: List[UploadFile] = File(...)):
         df = pd.read_csv(csv_path)
         transactions = json.loads(df.to_json(orient="records"))
 
-        # container.remove()
+        container.remove()
 
         return {
             "files": [f.filename for f in files],
@@ -92,15 +92,12 @@ async def upload(files: List[UploadFile] = File(...)):
             "transactions": transactions,
         }
 
-    except HTTPException:
-        shutil.rmtree(tmp_dir, ignore_errors=True)
-        raise
     except docker.errors.ImageNotFound:
-        shutil.rmtree(tmp_dir, ignore_errors=True)
         raise HTTPException(
             status_code=500,
             detail=f"Docker image '{PROCESSING_IMAGE}' not found. Build it first: docker build -t {PROCESSING_IMAGE} .",
         )
     except Exception as e:
-        shutil.rmtree(tmp_dir, ignore_errors=True)
         raise HTTPException(status_code=500, detail=str(e))
+    finally:
+        shutil.rmtree(tmp_dir, ignore_errors=True)

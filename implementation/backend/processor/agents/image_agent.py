@@ -18,17 +18,23 @@ class ImageAgent:
 
     async def run(self) -> None:
         path = Path(self.file_path)
-        mime = _MIME.get(path.suffix.lower(), "image/jpeg")
-        image_part = types.Part.from_bytes(data=path.read_bytes(), mime_type=mime)
+        print(f"\n[LLM] Invoking ImageAgent for {path.name}", flush=True)
+        try:
+            mime = _MIME.get(path.suffix.lower(), "image/jpeg")
+            image_part = types.Part.from_bytes(data=path.read_bytes(), mime_type=mime)
 
-        await _get_gemini().aio.models.generate_content(
-            model=self.model,
-            contents=[
-                image_part,
-                f"This is {path.name}. Identify all financial transactions and store them using df_dump_rows (batch).",
-            ],
-            config=types.GenerateContentConfig(
-                system_instruction=self.system_prompt,
-                tools=[self.mcp_client.session],
-            ),
-        )
+            result = await _get_gemini().aio.models.generate_content(
+                model=self.model,
+                contents=[
+                    image_part,
+                    f"This is {path.name}. Identify all financial transactions and store them using df_dump_rows (batch).",
+                ],
+                config=types.GenerateContentConfig(
+                    system_instruction=self.system_prompt,
+                    tools=[self.mcp_client.session],
+                ),
+            )
+            print(f"[LLM] Completed {path.name}: {result}", flush=True)
+        except Exception as e:
+            print(f"[LLM] Error processing {path.name}: {e}", flush=True)
+            raise

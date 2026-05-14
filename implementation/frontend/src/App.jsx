@@ -1,7 +1,14 @@
+import { useState } from 'react';
 import './styles/upload.css';
 import FileUpload from './components/FileUpload';
+import TransactionsTable from './components/TransactionsTable';
 
 export default function App() {
+  const [transactions, setTransactions] = useState(null);
+
+  const handleTransactions = (incoming) =>
+    setTransactions((prev) => prev ? [...prev, ...incoming] : incoming);
+
   return (
     <main>
       <div style={{ textAlign: 'center', marginBottom: '1.5rem' }}>
@@ -10,7 +17,8 @@ export default function App() {
           Upload financial documents for processing
         </p>
       </div>
-      <FileUpload />
+      <FileUpload onTransactions={handleTransactions} />
+      <TransactionsTable transactions={transactions} />
     </main>
   );
 }

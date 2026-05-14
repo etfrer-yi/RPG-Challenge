@@ -44,20 +44,7 @@ class BaseAgent:
                 ),
             )
             
-            # Log model's text response (reasoning)
-            if result.text:
-                print(f"[LLM] Model response for {fname}:\n{result.text[:500]}{'...' if len(result.text) > 500 else ''}", flush=True)
-            
-            # Log tool calls made
-            if hasattr(result, 'candidates') and result.candidates:
-                for candidate in result.candidates:
-                    if hasattr(candidate, 'content') and candidate.content and candidate.content.parts:
-                        for part in candidate.content.parts:
-                            if hasattr(part, 'function_call') and part.function_call:
-                                fc = part.function_call
-                                print(f"[LLM] Tool call: {fc.name}({json.dumps(dict(fc.args))})", flush=True)
-            
-            print(f"[LLM] Completed {fname}", flush=True)
+            print(f"[LLM] Completed {fname}: {result}", flush=True)
             return result
         except Exception as e:
             print(f"[LLM] Error processing {fname}: {e}", flush=True)

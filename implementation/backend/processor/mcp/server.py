@@ -131,15 +131,6 @@ def df_dump_rows(rows: list[dict]) -> str:
     _df = pd.concat([_df, pd.DataFrame(processed)], ignore_index=True)
     return f"Rows appended: {len(rows)} (total rows: {len(_df)})"
 
-
-@mcp.tool()
-def df_get_row(index: int) -> str:
-    """Get a row from the shared DataFrame by integer index. Returns JSON."""
-    if index < 0 or index >= len(_df):
-        return "NOT_FOUND"
-    return _df.iloc[index].to_json()
-
-
 @mcp.tool()
 def df_get_all() -> str:
     """Return the entire shared DataFrame as a JSON array of records."""
